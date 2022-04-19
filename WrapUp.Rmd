@@ -1,0 +1,31 @@
+---
+title: "wrapup1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+a1 <- 
+  read.csv('./Data/monthly_mortality_10_countries.csv')
+
+a2 <- a1[,c(1,2,4,11,12:ncol(a1))]
+
+#peru, ecuador,colombia,mexico,
+
+pr <- a2[grep("pr 2-59m A",a2$age_group),]
+write.csv(pr, './Data/Peru_2_59m.csv')
+
+ec <- a2[grep("ec 2-59m A",a2$age_group),]
+write.csv(ec, './Data/Ecuador_2_59m.csv')
+
+co <- a2[grep("co 2-59m A",a2$age_group),]
+write.csv(co, './Data/Colombia_2_59m.csv')
+
+mx <- a2[grep("mx 2-59m A",a2$age_group),]
+write.csv(mx, './Data/Mexico_2_59m.csv')
+
+```
+
