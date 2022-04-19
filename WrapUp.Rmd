@@ -31,10 +31,6 @@ write.csv(mx, './Data/Mexico_2_59m.csv')
 
 
 Peru
-
-
 Ecuador
-
 Colombia
-
 Mexico
