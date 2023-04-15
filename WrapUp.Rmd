@@ -41,11 +41,11 @@ Mexico PCV7 (2+1 Feb 2008); PCV13 (2+1) Feb 2011
 
 Set parameters here for the model
 ```{r}
-vax.intro.date= as.Date('2008-01-01')
+vax.intro.date= as.Date('2008-02-01')
 
 months_until_second_knot = 12 #how many months between vaccine intro and start of eval period
 
-months_until_third_knot = 999  #if there is a 2nd change in slope, how many months after vaccine intro does it occur? if no 2nd change, set as 999
+months_until_third_knot = 36  #if there is a 2nd change in slope, how many months after vaccine intro does it occur? if no 2nd change, set as 999
 
 ds= 'mx' #mx=Mexico, pr=Peru, ec=Ecuador, co=Colombia
 ```
@@ -71,6 +71,12 @@ Run this function to generate uncertainty intervals and summary stats for the IT
 ```{r}
 mod1.outputs <- its_outputs(mod1)
 
+```
+
+Ratio for entire evaluation period
+
+```{r}
+mod1.outputs$rr.q.post
 ```
 
 Rate ratio over time from ITS
@@ -129,6 +135,13 @@ format the outputs, generate plots
 ```{r}
 mod3.outputs <- control_outputs(fitted.mod=mod3,months.start=months_until_second_knot,
                                 set.vax.intro.date=vax.intro.date,set.months_until_second_knot=months_until_second_knot)
+```
+
+Rate ratio for eval period
+
+```{r}
+mod3.outputs$rr.q.post
+
 ```
 
 Rate ratio at each time points
