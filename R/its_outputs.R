@@ -49,6 +49,16 @@ its_outputs <- function( fitted.mod=mod1,niter=5000, set.vax.intro.date=vax.intr
     cbind.data.frame(., 'date'=as.Date(ds$date))  %>%
     rename(median=`50%`, lcl=`2.5%`, ucl=`97.5%`)
   
+  prevented.post.t <-    preds.stage1.regmean.cf - preds.stage1.regmean
+  
+  
+  #Cumulative cases
+  cum.post.t <-  apply(prevented.post.t,2, function(x) cumsum(x)   )
+  
+  cum.post.t.q <-   as.data.frame(t(apply(cum.post.t, 1, quantile, probs = c(0.025, 0.5, 0.975)))) %>% 
+    cbind.data.frame(., 'date'=as.Date(ds$date))  %>%
+    rename(median=`50%`, lcl=`2.5%`, ucl=`97.5%`)
+  
   eval.period = which((mod.matrix[,'spl2'] >0 )) #period when evaluate
   preds.stage1.regmean.SUM <-    apply(preds.stage1.regmean[eval.period ,],2, sum )
   preds.stage1.regmean.cf.SUM <- apply(preds.stage1.regmean.cf[eval.period, ],2,sum)
@@ -62,6 +72,16 @@ its_outputs <- function( fitted.mod=mod1,niter=5000, set.vax.intro.date=vax.intr
     theme_classic() +
     geom_ribbon(data=rr.q.t, aes(x=date, ymin=lcl, ymax=ucl), alpha=0.1) +
     ylab('Rate ratio') +
+    geom_hline(yintercept=1, lty=2, col='red')+
+    geom_vline(xintercept=as.numeric(set.vax.intro.date), lty=2, col='black')
+  
+  p.cum_prevented <- cum.post.t.q %>% 
+    ungroup() %>%
+    ggplot( aes( x=date, y=median)) +
+    geom_line() +
+    theme_classic() +
+    geom_ribbon(data=cum.post.t.q, aes(x=date, ymin=lcl, ymax=ucl), alpha=0.1) +
+    ylab('Deaths averted') +
     geom_hline(yintercept=1, lty=2, col='red')+
     geom_vline(xintercept=as.numeric(set.vax.intro.date), lty=2, col='black')
   
@@ -103,7 +123,8 @@ its_outputs <- function( fitted.mod=mod1,niter=5000, set.vax.intro.date=vax.intr
                  'aic1'=AIC(model.output),'outcome'=mod1$y,
                  'all.preds'=all.preds, 
                  'rr.q.t'=rr.q.t, 'dates'=ds$date, 'p.rr.trend'=p.rr.trend,
-                 'p.preds.agg'=p.preds.agg, 'p.preds'=p.preds)
+                 'p.preds.agg'=p.preds.agg, 'p.preds'=p.preds,
+                 'p.cum_prevented'=p.cum_prevented)
   
   
   return(rr.out)

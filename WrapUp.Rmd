@@ -9,6 +9,7 @@ library(dplyr)
 library(ggplot2)
 library(MASS)
 library(lubridate)
+library(plotly)
 source('./R/its_outputs.R')
 source('./R/control_outputs.R')
 
@@ -87,6 +88,12 @@ Observed vs expected by year Observed=red; black=fitted; gray shaded area=counte
 mod1.outputs$p.preds.agg
 ```
 
+Cumulative cases prevented
+```{r}
+ggplotly(mod1.outputs$p.cum_prevented)
+```
+
+
 ## Model 2: ITS models with controls
 ```{r}
 
@@ -135,10 +142,15 @@ Observed vs expected by month
 mod3.outputs$p.preds
 ```
 
-Observed vs expecte by year
+Observed vs expected by year
 ```{r}
 mod3.outputs$p.preds.agg
 ```
+
+```{r}
+ggplotly(mod3.outputs$p.cum_prevented)
+```
+
 
 
 

@@ -44,19 +44,29 @@ control_outputs <- function( fitted.mod=mod3,niter=10000, months.start=months_un
     rename(median_pred=`50%`, lcl_pred=`2.5%`, ucl_pred=`97.5%`)
   
   
-  rr.t <-  apply(preds.stage1.regmean,2, function(x) Y/x  )
+  rr.t <-  apply(preds.stage2,2, function(x) Y/x  )
   
   rr.q.t <- as.data.frame(t(apply(rr.t, 1, quantile, probs = c(0.025, 0.5, 0.975)))) %>% 
     cbind.data.frame(., 'date'=as.Date(ds$date))  %>%
     rename(median=`50%`, lcl=`2.5%`, ucl=`97.5%`)
   
   eval.period = eval.index:nrow(mod.matrix) #period when evaluate
-  preds.stage1.regmean.SUM <-    apply(preds.stage1.regmean[eval.period ,],2, sum )
+  preds.stage2.regmean.SUM <-    apply(preds.stage2[eval.period ,],2, sum )
   obs.sum.eval <- sum(Y[eval.period])
   
-  rr.post <-    preds.stage1.regmean.SUM / obs.sum.eval
+  rr.post <-    preds.stage2 / obs.sum.eval
   rr.q.post <- quantile(rr.post, probs = c(0.025, 0.5, 0.975))
   
+  prevented.post.t <-    apply(preds.stage2,2, function(x) x -Y   )
+
+  
+  #Cumulative cases
+  cum.post.t <-  apply(prevented.post.t,2, function(x) cumsum(x)   )
+
+  cum.post.t.q <-   as.data.frame(t(apply(cum.post.t, 1, quantile, probs = c(0.025, 0.5, 0.975)))) %>% 
+    cbind.data.frame(., 'date'=as.Date(ds$date))  %>%
+    rename(median=`50%`, lcl=`2.5%`, ucl=`97.5%`)
+    
   p.rr.trend <- rr.q.t %>% 
     ungroup() %>%
     ggplot( aes( x=date, y=median)) +
@@ -65,7 +75,18 @@ control_outputs <- function( fitted.mod=mod3,niter=10000, months.start=months_un
     geom_ribbon(data=rr.q.t, aes(x=date, ymin=lcl, ymax=ucl), alpha=0.1) +
     ylab('Rate ratio') +
     geom_hline(yintercept=1, lty=2, col='red')+
-    geom_vline(xintercept=as.numeric(year(set.vax.intro.date)), lty=2, col='black')
+    geom_vline(xintercept=as.numeric(set.vax.intro.date), lty=2, col='black')
+  
+  
+  p.cum_prevented <- cum.post.t.q %>% 
+    ungroup() %>%
+    ggplot( aes( x=date, y=median)) +
+    geom_line() +
+    theme_classic() +
+    geom_ribbon(data=cum.post.t.q, aes(x=date, ymin=lcl, ymax=ucl), alpha=0.1) +
+    ylab('Deaths averted') +
+    geom_hline(yintercept=1, lty=2, col='red')+
+    geom_vline(xintercept=as.numeric(set.vax.intro.date), lty=2, col='black')
   
   
   all.preds <- preds.q %>%
@@ -100,7 +121,8 @@ control_outputs <- function( fitted.mod=mod3,niter=10000, months.start=months_un
                  'aic1'=AIC(model.output),'outcome'=mod1$y,
                  'all.preds'=all.preds, 
                  'rr.q.t'=rr.q.t, 'dates'=ds$date, 'p.rr.trend'=p.rr.trend,
-                 'p.preds.agg'=p.preds.agg, 'p.preds'=p.preds)
+                 'p.preds.agg'=p.preds.agg, 'p.preds'=p.preds, 
+                 'p.cum_prevented'=p.cum_prevented)
   
   
   return(rr.out)
