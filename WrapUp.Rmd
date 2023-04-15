@@ -5,32 +5,143 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(MASS)
+library(lubridate)
+source('./R/its_outputs.R')
+source('./R/control_outputs.R')
+
+source('./R/scale.fun.R')
+source('./R/run_its.R')
+source('./R/run_control.R')
+
 ```
 
 ```{r}
 a1 <- 
   read.csv('./Data/monthly_mortality_10_countries.csv')
 
-a2 <- a1[,c(1,2,4,11,12:ncol(a1))]
+a2 <- a1[,c(1,2,4,11,12:ncol(a1))] %>% 
+  rename(J12_J18= J12_J18_prim,
+         acm_noresp_nodiar =acm_noj_nodiarr_prim,
+         date=monthdate) %>%
+  dplyr::select(date,age_group, J12_J18, acm_noresp_nodiar, E40_E46_prim,E70_E90_prim,A30_49_prim, C00_D48_prim, K00_K99_prim, V01_X59_prim) %>% 
+  filter( grepl('2-59m A', age_group))
 
-#peru, ecuador,colombia,mexico,
+```
 
-pr <- a2[grep("pr 2-59m A",a2$age_group),]
-write.csv(pr, './Data/Peru_2_59m.csv')
+Vaccine introduction:
+Peru: PCV7 Aug 2009, PCV10 Dec 2011
+Ecuador: PCV7 Aug 2010, PCV10 (2+1) Feb 2011, PCV10(3+0 Feb 2014) 
+Colombia PCV10 (2+1)" Nov 2011
+Mexico PCV7 (2+1 Feb 2008); PCV13 (2+1) Feb 2011
 
-ec <- a2[grep("ec 2-59m A",a2$age_group),]
-write.csv(ec, './Data/Ecuador_2_59m.csv')
 
-co <- a2[grep("co 2-59m A",a2$age_group),]
-write.csv(co, './Data/Colombia_2_59m.csv')
+Set parameters here for the model
+```{r}
+vax.intro.date= as.Date('2008-01-01')
 
-mx <- a2[grep("mx 2-59m A",a2$age_group),]
-write.csv(mx, './Data/Mexico_2_59m.csv')
+months_until_second_knot = 12 #how many months between vaccine intro and start of eval period
+
+months_until_third_knot = 999  #if there is a 2nd change in slope, how many months after vaccine intro does it occur? if no 2nd change, set as 999
+
+ds= 'mx' #mx=Mexico, pr=Peru, ec=Ecuador, co=Colombia
+```
+
+
+```{r}
+
+#form_its1 <- as.formula ("J12_J18 ~ month+ index + spl1 + spl2 + spl3 + acm_noresp_nodiar")
+
+form_its1 <- as.formula ("J12_J18 ~ month+ index + spl1 + spl2  +offset(acm_noresp_nodiar)")
+
+
+mod1 <- run_its(set.vax.intro.date= vax.intro.date, set.form_its1=form_its1, months_until_third_knot=months_until_third_knot, months_until_second_knot=months_until_second_knot )
+
+summary(mod1$mod1)
+
+mod1$mod1$aic #AIC score
+
+```
+
+Run this function to generate uncertainty intervals and summary stats for the ITS model
+
+```{r}
+mod1.outputs <- its_outputs(mod1)
+
+```
+
+Rate ratio over time from ITS
+```{r}
+mod1.outputs$p.rr.trend +ggtitle('Rate Ratio over time following vaccine introduction')
+```
+
+Observed vs expected by month. Observed=red; black=fitted; gray shaded area=counterfactual
+```{r}
+mod1.outputs$p.preds
+```
+
+Observed vs expected by year Observed=red; black=fitted; gray shaded area=counterfactual
+```{r}
+mod1.outputs$p.preds.agg
+```
+
+## Model 2: ITS models with controls
+```{r}
+
+#form_its1 <- as.formula ("J12_J18 ~ month+ index + spl1 + spl2 + spl3 + acm_noresp_nodiar")
+
+form_its1 <- as.formula ("J12_J18 ~ month+ index + spl1 + spl2  +E70_E90_prim + E40_E46_prim+ A30_49_prim + C00_D48_prim + K00_K99_prim + V01_X59_prim + offset(acm_noresp_nodiar)")
+
+mod2 <- run_its(set.vax.intro.date= vax.intro.date, set.form_its1=form_its1, months_until_third_knot=months_until_third_knot, months_until_second_knot=months_until_second_knot )
+
+summary(mod2$mod1)
+
+mod2$mod1$aic #AIC score
 
 ```
 
 
-Peru
-Ecuador
-Colombia
-Mexico
+## Model 3: Fit to pre-period, and project forward (similar to synthetic controls)
+```{r}
+
+#form_its1 <- as.formula ("J12_J18 ~ month+ index + spl1 + spl2 + spl3 + acm_noresp_nodiar")
+
+form_control <- as.formula ("J12_J18_pre ~ month+ index   +E70_E90_prim + E40_E46_prim+ A30_49_prim + C00_D48_prim + K00_K99_prim + V01_X59_prim + acm_noresp_nodiar")
+
+mod3 <- run_control(set.vax.intro.date= vax.intro.date, set.form_cont1=form_control)
+
+summary(mod3$mod1)
+
+mod3$mod1$aic #AIC score
+
+```
+format the outputs, generate plots
+
+```{r}
+mod3.outputs <- control_outputs(fitted.mod=mod3,months.start=months_until_second_knot,
+                                set.vax.intro.date=vax.intro.date,set.months_until_second_knot=months_until_second_knot)
+```
+
+Rate ratio at each time points
+
+```{r}
+mod3.outputs$p.rr.trend
+```
+
+Observed vs expected by month
+```{r}
+mod3.outputs$p.preds
+```
+
+Observed vs expecte by year
+```{r}
+mod3.outputs$p.preds.agg
+```
+
+
+
+
+
+
