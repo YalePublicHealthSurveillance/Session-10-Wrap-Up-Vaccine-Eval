@@ -104,9 +104,12 @@ ggplotly(mod1.outputs$p.cum_prevented)
 
 
 ## Model 3: Fit to pre-period, and project forward (similar to synthetic controls)
+
+Note you could adjust for trend (with index) or not here; it is debtable what the best strategy is. Just be consistent and justify your approach, and speficy it a priori.
+
 ```{r}
 
-form_control <- as.formula ("J12_J18_pre ~ month+ index   +E70_E90_prim + E40_E46_prim+ A30_49_prim + C00_D48_prim + K00_K99_prim + V01_X59_prim + acm_noresp_nodiar")
+form_control <- as.formula ("J12_J18_pre ~ month+ E70_E90_prim + E40_E46_prim+ A30_49_prim + C00_D48_prim + K00_K99_prim + V01_X59_prim + acm_noresp_nodiar")
 
 mod3 <- run_control(set.vax.intro.date= vax.intro.date, set.form_cont1=form_control)
 
