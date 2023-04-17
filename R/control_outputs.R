@@ -51,10 +51,11 @@ control_outputs <- function( fitted.mod=mod3,niter=10000, months.start=months_un
     rename(median=`50%`, lcl=`2.5%`, ucl=`97.5%`)
   
   eval.period = eval.index:nrow(mod.matrix) #period when evaluate
+  
   preds.stage2.regmean.SUM <-    apply(preds.stage2[eval.period ,],2, sum )
   obs.sum.eval <- sum(Y[eval.period])
   
-  rr.post <-    preds.stage2.regmean.SUM / obs.sum.eval
+  rr.post <-    obs.sum.eval/preds.stage2.regmean.SUM 
   rr.q.post <- quantile(rr.post, probs = c(0.025, 0.5, 0.975))
   
   prevented.post.t <-    apply(preds.stage2,2, function(x) x -Y   )

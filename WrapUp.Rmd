@@ -19,11 +19,13 @@ source('./R/run_control.R')
 
 ```
 
+Import the data
+
 ```{r}
 a1 <- 
   read.csv('./Data/monthly_mortality_10_countries.csv')
 
-a2 <- a1[,c(1,2,4,11,12:ncol(a1))] %>% 
+a2 <- a1 %>% 
   rename(J12_J18= J12_J18_prim,
          acm_noresp_nodiar =acm_noj_nodiarr_prim,
          date=monthdate) %>%
@@ -36,18 +38,19 @@ Vaccine introduction:
 Peru: PCV7 Aug 2009, PCV10 Dec 2011
 Ecuador: PCV7 Aug 2010, PCV10 (2+1) Feb 2011, PCV10(3+0 Feb 2014) 
 Colombia PCV10 (2+1)" Nov 2011
+Argentina Jan 2012 (PCV13)
 Mexico PCV7 (2+1 Feb 2008); PCV13 (2+1) Feb 2011
 
 
 Set parameters here for the model
 ```{r}
-vax.intro.date= as.Date('2008-02-01')
+vax.intro.date= as.Date('2012-01-01')
 
 months_until_second_knot = 12 #how many months between vaccine intro and start of eval period
 
-months_until_third_knot = 36  #if there is a 2nd change in slope, how many months after vaccine intro does it occur? if no 2nd change, set as 999
+months_until_third_knot = 48  #if there is a 2nd change in slope, how many months after vaccine intro does it occur? if no 2nd change, set as 999
 
-ds= 'mx' #mx=Mexico, pr=Peru, ec=Ecuador, co=Colombia
+ds= 'ar' #mx=Mexico, pr=Peru, ec=Ecuador, co=Colombia
 ```
 
 
@@ -55,7 +58,7 @@ ds= 'mx' #mx=Mexico, pr=Peru, ec=Ecuador, co=Colombia
 
 #form_its1 <- as.formula ("J12_J18 ~ month+ index + spl1 + spl2 + spl3 + acm_noresp_nodiar")
 
-form_its1 <- as.formula ("J12_J18 ~ month+ index + spl1 + spl2  +spl3 + offset(acm_noresp_nodiar)")
+form_its1 <- as.formula ("J12_J18 ~ month+ index + spl1 + spl2   + offset(acm_noresp_nodiar)")
 
 
 mod1 <- run_its(set.vax.intro.date= vax.intro.date, set.form_its1=form_its1, months_until_third_knot=months_until_third_knot, months_until_second_knot=months_until_second_knot )
@@ -97,22 +100,6 @@ mod1.outputs$p.preds.agg
 Cumulative cases prevented
 ```{r}
 ggplotly(mod1.outputs$p.cum_prevented)
-```
-
-
-## Model 2: ITS models with controls
-```{r}
-
-#form_its1 <- as.formula ("J12_J18 ~ month+ index + spl1 + spl2 + spl3 + acm_noresp_nodiar")
-
-form_its1 <- as.formula ("J12_J18 ~ month+ index + spl1 + spl2  +E70_E90_prim + E40_E46_prim+ A30_49_prim + C00_D48_prim + K00_K99_prim + V01_X59_prim + offset(acm_noresp_nodiar)")
-
-mod2 <- run_its(set.vax.intro.date= vax.intro.date, set.form_its1=form_its1, months_until_third_knot=months_until_third_knot, months_until_second_knot=months_until_second_knot )
-
-summary(mod2$mod1)
-
-mod2$mod1$aic #AIC score
-
 ```
 
 
