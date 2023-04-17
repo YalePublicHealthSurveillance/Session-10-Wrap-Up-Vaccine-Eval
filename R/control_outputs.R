@@ -54,7 +54,7 @@ control_outputs <- function( fitted.mod=mod3,niter=10000, months.start=months_un
   preds.stage2.regmean.SUM <-    apply(preds.stage2[eval.period ,],2, sum )
   obs.sum.eval <- sum(Y[eval.period])
   
-  rr.post <-    preds.stage2 / obs.sum.eval
+  rr.post <-    preds.stage2.regmean.SUM / obs.sum.eval
   rr.q.post <- quantile(rr.post, probs = c(0.025, 0.5, 0.975))
   
   prevented.post.t <-    apply(preds.stage2,2, function(x) x -Y   )
@@ -96,7 +96,7 @@ control_outputs <- function( fitted.mod=mod3,niter=10000, months.start=months_un
     ggplot( aes( x=date, y=median_pred)) +
     geom_ribbon(data=all.preds, aes(x=date, ymin=lcl_pred, ymax=ucl_pred), alpha=0.1) +
     geom_line() +
-    geom_line(data=all.preds, aes(x=date, y=outcome), color='red', alpha=0.3) +
+    geom_point(data=all.preds, aes(x=date, y=outcome), color='red', alpha=0.3) +
     theme_classic() +
     ylab('Number of cases') +
     ylim(0,NA) +
@@ -111,7 +111,7 @@ control_outputs <- function( fitted.mod=mod3,niter=10000, months.start=months_un
     ggplot( aes( x=year, y=median_pred)) +
     geom_ribbon(data=agg.pred, aes(x=year, ymin=lcl_pred, ymax=ucl_pred), alpha=0.1) +
     geom_line() +
-    geom_line(data=agg.pred, aes(x=year, y=outcome), color='red', alpha=0.3) +
+    geom_point(data=agg.pred, aes(x=year, y=outcome), color='red', alpha=0.3) +
     theme_classic() +
     ylab('Number of cases') +
     ylim(0,NA)+

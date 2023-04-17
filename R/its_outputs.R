@@ -94,7 +94,7 @@ its_outputs <- function( fitted.mod=mod1,niter=5000, set.vax.intro.date=vax.intr
     ggplot( aes( x=date, y=median_pred)) +
     geom_ribbon(data=all.preds, aes(x=date, ymin=lcl_cf, ymax=ucl_cf), alpha=0.1) +
     geom_line() +
-    geom_line(data=all.preds, aes(x=date, y=outcome), color='red', alpha=0.3) +
+    geom_point(data=all.preds, aes(x=date, y=outcome), color='red', alpha=0.3) +
     geom_line(data=all.preds, aes(x=date, y=median_cf), color='white', lty=2) +
     theme_classic() +
     ylab('Number of cases') +
@@ -111,7 +111,7 @@ its_outputs <- function( fitted.mod=mod1,niter=5000, set.vax.intro.date=vax.intr
     ggplot( aes( x=year, y=median_pred)) +
     geom_ribbon(data=agg.pred, aes(x=year, ymin=lcl_cf, ymax=ucl_cf), alpha=0.1) +
     geom_line() +
-    geom_line(data=agg.pred, aes(x=year, y=outcome), color='red', alpha=0.3) +
+    geom_point(data=agg.pred, aes(x=year, y=outcome), color='red', alpha=0.3) +
     geom_line(data=agg.pred, aes(x=year, y=median_cf), color='white', lty=2) +
     theme_classic() +
     ylab('Number of cases') +

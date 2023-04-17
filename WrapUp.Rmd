@@ -55,7 +55,7 @@ ds= 'mx' #mx=Mexico, pr=Peru, ec=Ecuador, co=Colombia
 
 #form_its1 <- as.formula ("J12_J18 ~ month+ index + spl1 + spl2 + spl3 + acm_noresp_nodiar")
 
-form_its1 <- as.formula ("J12_J18 ~ month+ index + spl1 + spl2  +offset(acm_noresp_nodiar)")
+form_its1 <- as.formula ("J12_J18 ~ month+ index + spl1 + spl2  +spl3 + offset(acm_noresp_nodiar)")
 
 
 mod1 <- run_its(set.vax.intro.date= vax.intro.date, set.form_its1=form_its1, months_until_third_knot=months_until_third_knot, months_until_second_knot=months_until_second_knot )
@@ -118,8 +118,6 @@ mod2$mod1$aic #AIC score
 
 ## Model 3: Fit to pre-period, and project forward (similar to synthetic controls)
 ```{r}
-
-#form_its1 <- as.formula ("J12_J18 ~ month+ index + spl1 + spl2 + spl3 + acm_noresp_nodiar")
 
 form_control <- as.formula ("J12_J18_pre ~ month+ index   +E70_E90_prim + E40_E46_prim+ A30_49_prim + C00_D48_prim + K00_K99_prim + V01_X59_prim + acm_noresp_nodiar")
 
