@@ -23,7 +23,7 @@ source('./R/run_control.R')
 a1 <- 
   read.csv('./Data/monthly_mortality_10_countries.csv')
 
-a2 <- a1[,c(1,2,4,11,12:ncol(a1))] %>% 
+a2 <- a1 %>% 
   rename(J12_J18= J12_J18_prim,
          acm_noresp_nodiar =acm_noj_nodiarr_prim,
          date=monthdate) %>%
